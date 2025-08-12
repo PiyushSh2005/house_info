@@ -33,6 +33,7 @@
 
 
 
+
 import streamlit as st
 import pandas as pd
 import joblib
@@ -50,7 +51,7 @@ st.write("Available columns in dataset:", list(data.columns))
 
 # Expected column names (adjust if different in your dataset)
 price_col = next((col for col in data.columns if "price" in col), None)
-parking_col = next((col for col in data.columns if "parking" in col), None)
+car_col = next((col for col in data.columns if "car" in col), None)  # Updated from parking to car
 rooms_col = next((col for col in data.columns if "room" in col), None)
 type_col = next((col for col in data.columns if "type" in col), None)
 
@@ -64,12 +65,12 @@ st.header("Enter Your Requirements")
 # Budget input
 budget = st.number_input("Maximum budget (in ₹)", min_value=100000, step=50000)
 
-# Parking requirement
-if parking_col:
-    parking = st.number_input("Minimum Parking Spaces Required", min_value=0, step=1)
+# Car requirement
+if car_col:
+    car_spaces = st.number_input("Minimum Car Spaces Required", min_value=0, step=1)
 else:
-    st.warning("⚠ No 'Parking' column found in dataset.")
-    parking = None
+    st.warning("⚠ No 'Car' column found in dataset.")
+    car_spaces = None
 
 # Rooms requirement
 if rooms_col:
@@ -93,8 +94,8 @@ if st.button("Find Houses"):
     # Apply filters based on available columns
     if price_col:
         filtered_data = filtered_data[filtered_data[price_col] <= budget]
-    if parking_col and parking is not None:
-        filtered_data = filtered_data[filtered_data[parking_col] >= parking]
+    if car_col and car_spaces is not None:
+        filtered_data = filtered_data[filtered_data[car_col] >= car_spaces]
     if rooms_col and rooms is not None:
         filtered_data = filtered_data[filtered_data[rooms_col] >= rooms]
     if type_col and house_type is not None:
@@ -105,6 +106,9 @@ if st.button("Find Houses"):
         st.dataframe(filtered_data)
     else:
         st.warning("No houses found matching your criteria. Try adjusting your requirements.")
+
+
+
 
 
 
