@@ -43,8 +43,6 @@ data = pd.read_csv("Housing_RL (1).csv")
 model = joblib.load("model.pkl")
 scaler = joblib.load("scaler.pkl")
 
-# Normalize column names (case-insensitive matching)
-data.columns = [col.strip().lower() for col in data.columns]
 
 # Display available columns for debugging
 st.write("Available columns in dataset:", list(data.columns))
@@ -106,6 +104,7 @@ if st.button("Find Houses"):
         st.dataframe(filtered_data)
     else:
         st.warning("No houses found matching your criteria. Try adjusting your requirements.")
+
 
 
 
