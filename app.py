@@ -418,24 +418,25 @@ if st.button("Find Houses"):
         st.dataframe(filtered_original.reset_index(drop=True))
 
         # -----------------------
-        # Model Predictions
-        # -----------------------
-        if model is not None and scaler is not None:
-            try:
-                # Align columns with model's training features
-                expected_cols = list(model.feature_names_in_)
-                X = filtered_original.reindex(columns=expected_cols, fill_value=0)
+        # # Model Predictions
+        # # -----------------------
+        # if model is not None and scaler is not None:
+        #     try:
+        #         # Align columns with model's training features
+        #         expected_cols = list(model.feature_names_in_)
+        #         X = filtered_original.reindex(columns=expected_cols, fill_value=0)
 
-                # Scale features if scaler is available
-                X_scaled = scaler.transform(X)
-                preds = model.predict(X_scaled)
+        #         # Scale features if scaler is available
+        #         X_scaled = scaler.transform(X)
+        #         preds = model.predict(X_scaled)
 
-                results = filtered_original.copy().reset_index(drop=True)
-                results["Predicted Price"] = preds
-                st.markdown("### Model Predictions")
-                st.dataframe(results)
-            except Exception as e:
-                st.info(f"Model prediction skipped due to error: {e}")
+        #         results = filtered_original.copy().reset_index(drop=True)
+        #         results["Predicted Price"] = preds
+        #         st.markdown("### Model Predictions")
+        #         st.dataframe(results)
+        #     except Exception as e:
+        #         st.info(f"Model prediction skipped due to error: {e}")
+
 
 
 
