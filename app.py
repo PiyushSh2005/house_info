@@ -43,15 +43,15 @@ data = pd.read_csv("Housing_RL (1).csv")
 model = joblib.load("model.pkl")
 scaler = joblib.load("scaler.pkl")
 
+# Normalize column names (case-insensitive matching)
+data.columns = [col.strip().lower() for col in data.columns]
 
-# Display available columns for debugging
-st.write("Available columns in dataset:", list(data.columns))
 
 # Expected column names (adjust if different in your dataset)
 price_col = next((col for col in data.columns if "price" in col), None)
 car_col = next((col for col in data.columns if "Car" in col), None)  # Updated from parking to car
 rooms_col = next((col for col in data.columns if "room" in col), None)
-type_col = next((col for col in data.columns if "type" in col), None)
+type_col = next((col for col in data.columns if "Type" in col), None)
 
 # App layout
 st.set_page_config(layout="wide")
@@ -104,6 +104,7 @@ if st.button("Find Houses"):
         st.dataframe(filtered_data)
     else:
         st.warning("No houses found matching your criteria. Try adjusting your requirements.")
+
 
 
 
