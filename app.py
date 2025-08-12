@@ -51,7 +51,7 @@ st.write("Available columns in dataset:", list(data.columns))
 
 # Expected column names (adjust if different in your dataset)
 price_col = next((col for col in data.columns if "price" in col), None)
-car_col = next((col for col in data.columns if "car" in col), None)  # Updated from parking to car
+car_col = next((col for col in data.columns if "Car" in col), None)  # Updated from parking to car
 rooms_col = next((col for col in data.columns if "room" in col), None)
 type_col = next((col for col in data.columns if "type" in col), None)
 
@@ -66,7 +66,7 @@ st.header("Enter Your Requirements")
 budget = st.number_input("Maximum budget (in ₹)", min_value=100000, step=50000)
 
 # Car requirement
-if Car_col:
+if car_col:
     car_spaces = st.number_input("Minimum Car Spaces Required", min_value=0, step=1)
 else:
     st.warning("⚠ No 'Car' column found in dataset.")
@@ -106,6 +106,7 @@ if st.button("Find Houses"):
         st.dataframe(filtered_data)
     else:
         st.warning("No houses found matching your criteria. Try adjusting your requirements.")
+
 
 
 
