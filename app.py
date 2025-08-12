@@ -66,7 +66,7 @@ st.header("Enter Your Requirements")
 budget = st.number_input("Maximum budget (in ₹)", min_value=100000, step=50000)
 
 # Car requirement
-if car_col:
+if Car_col:
     car_spaces = st.number_input("Minimum Car Spaces Required", min_value=0, step=1)
 else:
     st.warning("⚠ No 'Car' column found in dataset.")
@@ -94,7 +94,7 @@ if st.button("Find Houses"):
     # Apply filters based on available columns
     if price_col:
         filtered_data = filtered_data[filtered_data[price_col] <= budget]
-    if car_col and car_spaces is not None:
+    if Car_col and car_spaces is not None:
         filtered_data = filtered_data[filtered_data[car_col] >= car_spaces]
     if rooms_col and rooms is not None:
         filtered_data = filtered_data[filtered_data[rooms_col] >= rooms]
@@ -106,6 +106,7 @@ if st.button("Find Houses"):
         st.dataframe(filtered_data)
     else:
         st.warning("No houses found matching your criteria. Try adjusting your requirements.")
+
 
 
 
