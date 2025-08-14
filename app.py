@@ -499,11 +499,24 @@ except Exception:
 data_lower = data.copy()
 data_lower.columns = [c.strip().lower().replace(" ", "_") for c in data_lower.columns]
 
+# Function to map lowercase column name to original
+def get_original_colname(lower_name, original_df):
+    for col in original_df.columns:
+        if col.strip().lower().replace(" ", "_") == lower_name:
+            return col
+    return None
+
 # Detect columns
 price_col_l = next((c for c in data_lower.columns if "price" in c), None)
 car_col_l = next((c for c in data_lower.columns if "car" in c), None)
 rooms_col_l = next((c for c in data_lower.columns if "room" in c), None)
 type_col_l = next((c for c in data_lower.columns if any(k in c for k in ("type", "house_type", "property_type"))), None)
+
+# Get original names
+price_col = get_original_colname(price_col_l, data)
+car_col = get_original_colname(car_col_l, data)
+rooms_col = get_original_colname(rooms_col_l, data)
+type_col = get_original_colname(type_col_l, data)
 
 # -----------------------
 # Layout: Left and Right
@@ -514,20 +527,20 @@ with left_col:
     st.header("Enter Your Requirements")
     budget = st.number_input("Maximum budget (₹)", min_value=0, value=1000000, step=50000)
 
-    if car_col_l:
+    if car_col:
         car_spaces = st.number_input("Minimum car spaces required", min_value=0, value=0, step=1)
     else:
         car_spaces = None
         st.info("No 'car' column detected; skipping filter.")
 
-    if rooms_col_l:
+    if rooms_col:
         rooms = st.number_input("Minimum number of rooms required", min_value=0, value=1, step=1)
     else:
         rooms = None
         st.info("No 'rooms' column detected; skipping filter.")
 
-    if type_col_l:
-        house_types = sorted(data_lower[type_col_l].dropna().unique())
+    if type_col:
+        house_types = sorted(data[type_col].dropna().unique())
         house_types.insert(0, "Any")
         house_type = st.selectbox("House type", options=house_types)
     else:
@@ -538,27 +551,25 @@ with left_col:
     # Filtering
     # -----------------------
     if st.button("Find Houses"):
-        filtered_lower = data_lower.copy()
+        filtered_df = data.copy()
 
-        if price_col_l:
-            filtered_lower = filtered_lower[filtered_lower[price_col_l] <= budget]
-        if car_col_l and car_spaces is not None:
-            filtered_lower = filtered_lower[filtered_lower[car_col_l] >= car_spaces]
-        if rooms_col_l and rooms is not None:
-            filtered_lower = filtered_lower[filtered_lower[rooms_col_l] >= rooms]
-        if type_col_l and house_type != "Any":
-            filtered_lower = filtered_lower[filtered_lower[type_col_l] == house_type]
+        if price_col:
+            filtered_df = filtered_df[filtered_df[price_col] <= budget]
+        if car_col and car_spaces is not None:
+            filtered_df = filtered_df[filtered_df[car_col] >= car_spaces]
+        if rooms_col and rooms is not None:
+            filtered_df = filtered_df[filtered_df[rooms_col] >= rooms]
+        if type_col and house_type != "Any":
+            filtered_df = filtered_df[filtered_df[type_col] == house_type]
 
-        if filtered_lower.empty:
+        if filtered_df.empty:
             st.warning("No houses found matching your criteria.")
+            st.session_state.filtered_data = None
         else:
-            st.success(f"Found {len(filtered_lower)} houses matching your requirements!")
-            filtered_original = data.loc[filtered_lower.index]
+            st.success(f"Found {len(filtered_df)} houses matching your requirements!")
             st.markdown("### Filtered Houses")
-            st.dataframe(filtered_original.reset_index(drop=True))
-
-            # Save filtered data to session for right column graphs
-            st.session_state.filtered_data = filtered_original
+            st.dataframe(filtered_df.reset_index(drop=True))
+            st.session_state.filtered_data = filtered_df
     else:
         st.session_state.filtered_data = None
 
@@ -568,23 +579,26 @@ with right_col:
         filtered_df = st.session_state.filtered_data
 
         # Example 1: Price distribution
-        fig, ax = plt.subplots()
-        ax.hist(filtered_df[price_col_l], bins=10, edgecolor='black')
-        ax.set_title("Price Distribution")
-        ax.set_xlabel("Price")
-        ax.set_ylabel("Count")
-        st.pyplot(fig)
+        if price_col:
+            fig, ax = plt.subplots()
+            ax.hist(filtered_df[price_col], bins=10, edgecolor='black')
+            ax.set_title("Price Distribution")
+            ax.set_xlabel("Price")
+            ax.set_ylabel("Count")
+            st.pyplot(fig)
 
         # Example 2: Rooms vs Price
-        if rooms_col_l:
+        if rooms_col and price_col:
             fig2, ax2 = plt.subplots()
-            ax2.scatter(filtered_df[rooms_col_l], filtered_df[price_col_l])
+            ax2.scatter(filtered_df[rooms_col], filtered_df[price_col])
             ax2.set_title("Rooms vs Price")
             ax2.set_xlabel("Rooms")
             ax2.set_ylabel("Price")
             st.pyplot(fig2)
     else:
         st.info("Run a search to see graphs here.")
+
+
 
 
 
