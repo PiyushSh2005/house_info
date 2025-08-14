@@ -603,12 +603,6 @@ import joblib
 import numpy as np
 import base64
 import matplotlib.pyplot as plt
-from io import BytesIO
-from reportlab.lib.pagesizes import A4
-from reportlab.pdfgen import canvas
-from reportlab.platypus import Table, TableStyle, SimpleDocTemplate, Paragraph, Spacer
-from reportlab.lib import colors
-from reportlab.lib.styles import getSampleStyleSheet
 
 # -----------------------
 # Function to set background
@@ -633,39 +627,6 @@ def set_bg(image_file):
 
 # Set background
 set_bg("download.jpg")
-
-# -----------------------
-# Function to create PDF
-# -----------------------
-def create_pdf(df):
-    buffer = BytesIO()
-    doc = SimpleDocTemplate(buffer, pagesize=A4)
-    elements = []
-    styles = getSampleStyleSheet()
-
-    # Title
-    elements.append(Paragraph("🏠 Housing Price Finder Report", styles['Title']))
-    elements.append(Spacer(1, 12))
-    elements.append(Paragraph(f"Total Houses Found: {len(df)}", styles['Normal']))
-    elements.append(Spacer(1, 12))
-
-    # Table
-    table_data = [list(df.columns)] + df.astype(str).values.tolist()
-    table = Table(table_data, repeatRows=1)
-    table.setStyle(TableStyle([
-        ('BACKGROUND', (0, 0), (-1, 0), colors.lightblue),
-        ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
-        ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
-        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
-        ('FONTSIZE', (0, 0), (-1, 0), 10),
-        ('FONTSIZE', (0, 1), (-1, -1), 8),
-        ('GRID', (0, 0), (-1, -1), 0.25, colors.grey),
-    ]))
-    elements.append(table)
-
-    doc.build(elements)
-    buffer.seek(0)
-    return buffer
 
 # -----------------------
 # Page config
@@ -770,13 +731,15 @@ with left_col:
             st.dataframe(filtered_df.reset_index(drop=True))
             st.session_state.filtered_data = filtered_df
 
-            # PDF download
-            pdf_file = create_pdf(filtered_df)
+            # -----------------------
+            # Download button for report
+            # -----------------------
+            csv = filtered_df.to_csv(index=False).encode('utf-8')
             st.download_button(
-                label="📄 Download Report as PDF",
-                data=pdf_file,
-                file_name="housing_report.pdf",
-                mime="application/pdf"
+                label="📥 Download Report as CSV",
+                data=csv,
+                file_name="housing_report.csv",
+                mime="text/csv"
             )
     else:
         st.session_state.filtered_data = None
@@ -805,6 +768,7 @@ with right_col:
             st.pyplot(fig2)
     else:
         st.info("Run a search to see graphs here.")
+
 
 
 
