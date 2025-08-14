@@ -626,7 +626,7 @@ def set_bg(image_file):
     )
 
 # Set background
-set_bg("image.jpg")
+set_bg("downloaded.jpg")
 
 # -----------------------
 # Page config
@@ -768,6 +768,7 @@ with right_col:
             st.pyplot(fig2)
     else:
         st.info("Run a search to see graphs here.")
+
 
 
 
