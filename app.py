@@ -736,7 +736,7 @@ with left_col:
             # -----------------------
             csv = filtered_df.to_csv(index=False).encode('utf-8')
             st.download_button(
-                label="📥 Download Report as CSV",
+                label="📥 Download Report",
                 data=csv,
                 file_name="housing_report.csv",
                 mime="text/csv"
@@ -768,6 +768,7 @@ with right_col:
             st.pyplot(fig2)
     else:
         st.info("Run a search to see graphs here.")
+
 
 
 
