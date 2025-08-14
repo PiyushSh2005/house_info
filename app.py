@@ -437,12 +437,12 @@
 #         #     except Exception as e:
 #         #         st.info(f"Model prediction skipped due to error: {e}")
 
-
 import streamlit as st
 import pandas as pd
 import joblib
 import numpy as np
 import base64
+import matplotlib.pyplot as plt
 
 # -----------------------
 # Function to set background
@@ -499,11 +499,6 @@ except Exception:
 data_lower = data.copy()
 data_lower.columns = [c.strip().lower().replace(" ", "_") for c in data_lower.columns]
 
-if st.checkbox("Show dataset columns & sample"):
-    st.write("Original columns:", list(data.columns))
-    st.write("Lowercase columns:", list(data_lower.columns))
-    st.dataframe(data_lower.head())
-
 # Detect columns
 price_col_l = next((c for c in data_lower.columns if "price" in c), None)
 car_col_l = next((c for c in data_lower.columns if "car" in c), None)
@@ -511,53 +506,86 @@ rooms_col_l = next((c for c in data_lower.columns if "room" in c), None)
 type_col_l = next((c for c in data_lower.columns if any(k in c for k in ("type", "house_type", "property_type"))), None)
 
 # -----------------------
-# User Inputs
+# Layout: Left and Right
 # -----------------------
-st.header("Enter Your Requirements")
-budget = st.number_input("Maximum budget (₹)", min_value=0, value=1000000, step=50000)
+left_col, right_col = st.columns([1, 1])
 
-if car_col_l:
-    car_spaces = st.number_input("Minimum car spaces required", min_value=0, value=0, step=1)
-else:
-    car_spaces = None
-    st.info("No 'car' column detected; skipping filter.")
+with left_col:
+    st.header("Enter Your Requirements")
+    budget = st.number_input("Maximum budget (₹)", min_value=0, value=1000000, step=50000)
 
-if rooms_col_l:
-    rooms = st.number_input("Minimum number of rooms required", min_value=0, value=1, step=1)
-else:
-    rooms = None
-    st.info("No 'rooms' column detected; skipping filter.")
-
-if type_col_l:
-    house_types = sorted(data_lower[type_col_l].dropna().unique())
-    house_types.insert(0, "Any")
-    house_type = st.selectbox("House type", options=house_types)
-else:
-    house_type = "Any"
-    st.info("No 'house type' column detected; skipping filter.")
-
-# -----------------------
-# Filtering
-# -----------------------
-if st.button("Find Houses"):
-    filtered_lower = data_lower.copy()
-
-    if price_col_l:
-        filtered_lower = filtered_lower[filtered_lower[price_col_l] <= budget]
-    if car_col_l and car_spaces is not None:
-        filtered_lower = filtered_lower[filtered_lower[car_col_l] >= car_spaces]
-    if rooms_col_l and rooms is not None:
-        filtered_lower = filtered_lower[filtered_lower[rooms_col_l] >= rooms]
-    if type_col_l and house_type != "Any":
-        filtered_lower = filtered_lower[filtered_lower[type_col_l] == house_type]
-
-    if filtered_lower.empty:
-        st.warning("No houses found matching your criteria.")
+    if car_col_l:
+        car_spaces = st.number_input("Minimum car spaces required", min_value=0, value=0, step=1)
     else:
-        st.success(f"Found {len(filtered_lower)} houses matching your requirements!")
-        filtered_original = data.loc[filtered_lower.index]
-        st.markdown("### Filtered Houses")
-        st.dataframe(filtered_original.reset_index(drop=True))
+        car_spaces = None
+        st.info("No 'car' column detected; skipping filter.")
+
+    if rooms_col_l:
+        rooms = st.number_input("Minimum number of rooms required", min_value=0, value=1, step=1)
+    else:
+        rooms = None
+        st.info("No 'rooms' column detected; skipping filter.")
+
+    if type_col_l:
+        house_types = sorted(data_lower[type_col_l].dropna().unique())
+        house_types.insert(0, "Any")
+        house_type = st.selectbox("House type", options=house_types)
+    else:
+        house_type = "Any"
+        st.info("No 'house type' column detected; skipping filter.")
+
+    # -----------------------
+    # Filtering
+    # -----------------------
+    if st.button("Find Houses"):
+        filtered_lower = data_lower.copy()
+
+        if price_col_l:
+            filtered_lower = filtered_lower[filtered_lower[price_col_l] <= budget]
+        if car_col_l and car_spaces is not None:
+            filtered_lower = filtered_lower[filtered_lower[car_col_l] >= car_spaces]
+        if rooms_col_l and rooms is not None:
+            filtered_lower = filtered_lower[filtered_lower[rooms_col_l] >= rooms]
+        if type_col_l and house_type != "Any":
+            filtered_lower = filtered_lower[filtered_lower[type_col_l] == house_type]
+
+        if filtered_lower.empty:
+            st.warning("No houses found matching your criteria.")
+        else:
+            st.success(f"Found {len(filtered_lower)} houses matching your requirements!")
+            filtered_original = data.loc[filtered_lower.index]
+            st.markdown("### Filtered Houses")
+            st.dataframe(filtered_original.reset_index(drop=True))
+
+            # Save filtered data to session for right column graphs
+            st.session_state.filtered_data = filtered_original
+    else:
+        st.session_state.filtered_data = None
+
+with right_col:
+    st.header("📊 Graphs & Analysis")
+    if st.session_state.get("filtered_data") is not None:
+        filtered_df = st.session_state.filtered_data
+
+        # Example 1: Price distribution
+        fig, ax = plt.subplots()
+        ax.hist(filtered_df[price_col_l], bins=10, edgecolor='black')
+        ax.set_title("Price Distribution")
+        ax.set_xlabel("Price")
+        ax.set_ylabel("Count")
+        st.pyplot(fig)
+
+        # Example 2: Rooms vs Price
+        if rooms_col_l:
+            fig2, ax2 = plt.subplots()
+            ax2.scatter(filtered_df[rooms_col_l], filtered_df[price_col_l])
+            ax2.set_title("Rooms vs Price")
+            ax2.set_xlabel("Rooms")
+            ax2.set_ylabel("Price")
+            st.pyplot(fig2)
+    else:
+        st.info("Run a search to see graphs here.")
+
 
 
 
